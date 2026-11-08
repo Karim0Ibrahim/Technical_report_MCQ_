@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>بنك أسئلة التقارير والعروض التقديمية (70 سؤال)</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Cairo', 'Inter', sans-serif;
+    }
+    .ltr-text {
+      direction: ltr;
+      text-align: left;
+      font-family: 'Inter', sans-serif;
+    }
+    .option-btn {
+      transition: all 0.2s ease;
+    }
+    .option-btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
+
+  <!-- Top Header -->
+  <header class="bg-slate-900/90 backdrop-blur border-b border-slate-800 sticky top-0 z-30">
+    <div class="max-w-4xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center font-bold text-lg shadow-lg shadow-indigo-600/30">
+          70
+        </div>
+        <div>
+          <h1 class="font-bold text-base sm:text-lg text-white">اختبار التقارير الفنية والعروض التقديمية</h1>
+          <p class="text-xs text-slate-400">ترتيب الأسئلة والاختيارات عشوائي بالكامل في كل مرة</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button id="btn-mode-single" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-indigo-600 text-white transition">
+          سؤال بسؤال
+        </button>
+        <button id="btn-mode-all" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition">
+          كل الأسئلة (70)
+        </button>
+        <button id="btn-shuffle-restart" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-emerald-600 hover:bg-emerald-500 text-white flex items-center gap-1.5 shadow-md shadow-emerald-600/20 transition">
+          <span>خلط وإعادة</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Score & Progress Bar -->
+  <div class="bg-slate-900/60 border-b border-slate-800/80">
+    <div class="max-w-4xl mx-auto px-4 py-3">
+      <div class="flex flex-wrap items-center justify-between gap-2 text-xs sm:text-sm mb-2">
+        <div class="flex items-center gap-4">
+          <span class="text-slate-300">الأسئلة المجابة: <strong id="stat-answered" class="text-white">0</strong> / <strong id="stat-total">70</strong></span>
+          <span class="text-emerald-400">صح: <strong id="stat-correct">0</strong></span>
+          <span class="text-rose-400">خطأ: <strong id="stat-wrong">0</strong></span>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="text-indigo-400 font-semibold">النسبة: <span id="stat-percent">0%</span></span>
+          <button id="btn-filter-wrong" class="hidden px-2.5 py-1 rounded-md text-xs font-semibold bg-rose-500/20 text-rose-300 border border-rose-500/30 hover:bg-rose-500/30 transition">
+            مراجعة الأخطاء فقط (<span id="wrong-count-badge">0</span>)
+          </button>
+          <button id="btn-show-all-pool" class="hidden px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-700 text-slate-200 hover:bg-slate-600 transition">
+            عرض الـ 70 سؤال
+          </button>
+        </div>
+      </div>
+      <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+        <div id="progress-bar" class="h-full bg-gradient-to-l from-indigo-500 to-emerald-500 transition-all duration-300" style="width: 0%"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Area -->
+  <main class="flex-1 max-w-4xl w-full mx-auto px-4 py-6">
+
+    <!-- SINGLE QUESTION VIEW -->
+    <section id="view-single" class="space-y-5">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 sm:p-7 shadow-xl">
+        <div class="flex items-center justify-between gap-2 mb-4">
+          <span id="single-q-counter" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/15 text-indigo-300 border border-indigo-500/30">
+            سؤال 1 من 70
+          </span>
+          <span id="single-q-orig" class="text-xs text-slate-500 ltr-text">PDF Page #1</span>
+        </div>
+
+        <h2 id="single-q-text" class="ltr-text text-lg sm:text-xl font-semibold text-white leading-relaxed mb-6 bg-slate-950/60 p-4 rounded-xl border border-slate-800/80">
+          Loading question...
+        </h2>
+
+        <div id="single-options-list" class="space-y-3 ltr-text">
+          <!-- Options injected by JS -->
+        </div>
+
+        <!-- Feedback Banner -->
+        <div id="single-feedback" class="hidden mt-5 p-4 rounded-xl border text-sm font-medium flex items-center justify-between gap-3">
+          <span id="single-feedback-text"></span>
+          <span id="single-feedback-correct" class="ltr-text font-bold"></span>
+        </div>
+
+        <!-- Navigation Controls -->
+        <div class="mt-6 pt-5 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3">
+          <button id="btn-prev" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:pointer-events-none text-slate-200 text-sm font-semibold transition">
+            السابق →
+          </button>
+
+          <div class="flex items-center gap-2">
+            <button id="btn-reveal-single" class="px-3.5 py-2.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-xs sm:text-sm font-semibold transition">
+              إظهار الإجابة الصحيحة
+            </button>
+          </div>
+
+          <button id="btn-next" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:pointer-events-none text-white text-sm font-semibold shadow-lg shadow-indigo-600/25 transition">
+            ← التالي
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Jump Grid -->
+      <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-4">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-xs font-semibold text-slate-400">الانتقال السريع بين الأسئلة (مرتبة عشوائياً):</h3>
+          <div class="flex items-center gap-3 text-[11px] text-slate-400">
+            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span> صحيح</span>
+            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span> خطأ</span>
+            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-slate-700 inline-block"></span> لم يُجب</span>
+          </div>
+        </div>
+        <div id="question-grid" class="grid grid-cols-10 sm:grid-cols-14 gap-1.5">
+          <!-- Number pills injected by JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ALL QUESTIONS LIST VIEW -->
+    <section id="view-all" class="hidden space-y-4">
+      <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 flex flex-wrap items-center justify-between gap-3">
+        <input id="search-input" type="text" placeholder="ابحث عن كلمة داخل الأسئلة (بالإنجليزي)..." class="ltr-text flex-1 min-w-[220px] bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500" />
+        <span id="all-view-count" class="text-xs text-slate-400">عرض 70 سؤال</span>
+      </div>
+      <div id="all-questions-container" class="space-y-4">
+        <!-- All cards injected by JS -->
+      </div>
+    </section>
+
+    <!-- Completion Summary Modal / Banner -->
+    <section id="completion-card" class="hidden mt-6 bg-gradient-to-br from-indigo-950/90 via-slate-900 to-slate-900 border border-indigo-500/40 rounded-2xl p-6 text-center shadow-2xl">
+      <h3 class="text-xl font-bold text-white mb-2">أنهيت جميع الأسئلة!</h3>
+      <p id="completion-summary-text" class="text-slate-300 text-sm mb-5"></p>
+      <div class="flex flex-wrap items-center justify-center gap-3">
+        <button id="btn-restart-modal" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm transition">
+          إعادة الاختبار بترتيب عشوائي جديد
+        </button>
+        <button id="btn-review-wrong-modal" class="hidden px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-semibold text-sm transition">
+          اختبرني في أخطائي فقط
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer with Hadith -->
+  <footer class="mt-8 border-t border-slate-800/80 bg-slate-900/70 py-6 px-4 text-center">
+    <div class="max-w-3xl mx-auto">
+      <p class="text-amber-300/95 font-semibold text-sm sm:text-base leading-relaxed bg-slate-950/70 border border-amber-500/25 rounded-2xl py-3.5 px-5 shadow-inner">
+        قال رسول الله ﷺ: «مَن صلَّى عليَّ صلاةً واحدةً ؛ صلَّى اللهُ عليه عشرَ صلواتٍ ، وحطَّ عنه عشرَ خطيئاتٍ»
+      </p>
+    </div>
+  </footer>
+
+
+  <script>
+    // Full 70 questions extracted from MCQ tech.pdf
+    const RAW_QUESTIONS = [
+      { id: 1, q: "acknowledgment is a-an......page", options: ["long", "optional", "additional", "basic"], answer: "optional" },
+      { id: 2, q: "the title of research chapters are called....", options: ["Headings", "points", "signs", "items"], answer: "Headings" },
+      { id: 3, q: "the title should contain at least one topic and a .....", options: ["Tool", "figure", "subject", "aim"], answer: "subject" },
+      { id: 4, q: "(et.al) is a latin word means....", options: ["others", "organisation", "author", "career"], answer: "others" },
+      { id: 5, q: "pollution affects on our society. (this sentence is a....)", options: ["profile", "title", "aim", "acknowledgment"], answer: "profile" },
+      { id: 6, q: "the researcher specified the time, place, and point of the research in.....", options: ["limits", "importance", "Conclusion", "Abstract"], answer: "limits" },
+      { id: 7, q: "You must define the terms of your research in...", options: ["Title page", "Introduction", "Conclusion", "Abstract"], answer: "Introduction" },
+      { id: 8, q: "Abstract is consisted of aim, tool and....", options: ["introduction", "topic", "result", "Importance"], answer: "result" },
+      { id: 9, q: "the reference must begin with....", options: ["date", "title", "city", "author name"], answer: "author name" },
+      { id: 10, q: "Data show is a kind of...", options: ["figures", "tools", "visual aids", "resources"], answer: "visual aids" },
+      { id: 11, q: "Eye contact give ....for the listener", options: ["importance", "understand", "trust", "attention"], answer: "importance" },
+      { id: 12, q: "The movement is important for the presentation because it adds", options: ["contact", "trust", "life", "respect"], answer: "life" },
+      { id: 13, q: "The data in basic Research .....", options: ["qualitative", "raw", "quantitative", "statistics"], answer: "qualitative" },
+      { id: 14, q: "is an instrument, has been described as an oral questionnaire", options: ["Survey", "interview", "Questionnaire", "Case study"], answer: "interview" },
+      { id: 15, q: "The data in applied Research are.....", options: ["quantitative", "raw", "qualitative", "statistics"], answer: "quantitative" },
+      { id: 16, q: "This tool is used for measuring the behaviors.", options: ["Survey", "Case study", "interview", "Questionnaire"], answer: "interview" },
+      { id: 17, q: "..........presents information in columns and rows.", options: ["Tables", "Charts", "Line drawings", "Illustrations"], answer: "Tables" },
+      { id: 18, q: "..........should only be a few sentences long", options: ["Headings", "Titles", "Abstracts", "Memos"], answer: "Abstracts" },
+      { id: 19, q: "The outcomes and results of your report should be placed in the ..........", options: ["Conclusion", "Illustration", "Heading", "Reference"], answer: "Conclusion" },
+      { id: 20, q: "The author name should be in the ..........of the report.", options: ["Title Page", "Reference", "last page", "Footnote"], answer: "Title Page" },
+      { id: 21, q: "The tables which are used in a report should be listed in a page called", options: ["appendix", "table of contents", "list of tables", "list of figures"], answer: "list of tables" },
+      { id: 22, q: "The resources of a report is placed on.............", options: ["introduction", "conclusion", "cover page", "references"], answer: "references" },
+      { id: 23, q: "......are supplements to the report, include material which is incidental to the report.", options: ["appendix", "Primary pages", "Abstract", "reference"], answer: "appendix" },
+      { id: 24, q: "List of tables in a report should be listed in a page placed on ..............", options: ["Reference", "List of tables", "List of figures", "Appendix"], answer: "List of tables" },
+      { id: 25, q: "The general attitude of the author is placed on.............", options: ["conclusion", "introduction", "references", "Cover page"], answer: "conclusion" },
+      { id: 26, q: "Results of a report are placed on.............", options: ["introduction", "conclusion", "references", "cover page"], answer: "conclusion" },
+      { id: 27, q: "This report is focusing on studying the nature of chronicle diseases ( )", options: ["topic", "Importance", "Acknowledgment", "Definition"], answer: "topic" },
+      { id: 28, q: "The content of reports are divided into.............", options: ["Units", "Sections", "Chapters", "Stages"], answer: "Chapters" },
+      { id: 29, q: "This kind of report which is based mainly on guidance and helping instructs .", options: ["Lab Research", "Informative", "Feasibility", "Manuals"], answer: "Manuals" },
+      { id: 30, q: "Informative reports written in ..............style.", options: ["An instructive", "A comparative", "A descriptive", "An Experimental"], answer: "A descriptive" },
+      { id: 31, q: "Recommendation of a report is placed on.............", options: ["cover page", "introduction", "Conclusion", "Abstract"], answer: "Conclusion" },
+      { id: 32, q: "study is submitted to finish the graduation project", options: ["Reference", "Aim", "Limits", "Definition"], answer: "Aim" },
+      { id: 33, q: "My best regards for everyone helped me", options: ["Definition", "aim", "Importance", "Acknowledgment"], answer: "Acknowledgment" },
+      { id: 34, q: "duration of this study is 3 months in a coastal area.", options: ["Definition", "Tool", "Limits", "Aim"], answer: "Limits" },
+      { id: 35, q: "Iron is a solid material used in different ways", options: ["Limits", "Tool", "Definition", "Aim"], answer: "Definition" },
+      { id: 36, q: "this report may be useful for the government for......", options: ["Definition", "aim", "Importance", "Acknowledgment"], answer: "Importance" },
+      { id: 37, q: "List of tables in a report should be listed in a page placed on ..............", options: ["Primary pages", "appendix", "Abstract", "reference"], answer: "Primary pages" },
+      { id: 38, q: "Importance of a report must be written in.............", options: ["Title page", "Abstract", "Conclusion", "Introduction"], answer: "Introduction" },
+      { id: 39, q: "The study is started in November 2018. ( )", options: ["Aim", "Definition", "Tool", "Limits"], answer: "Limits" },
+      { id: 40, q: "The purpose of the study is to examine the nature of chronicle diseases ( )", options: ["Aim", "Reference", "Definition", "Limits"], answer: "Aim" },
+      { id: 41, q: "Howard R. (2005): Professional English in Use, Cambridge, University Press. ( )", options: ["Aim", "Reference", "Definition", "Limits"], answer: "Reference" },
+      { id: 42, q: "A questionnaire is distributed among the students to collect data. ( )", options: ["Tool", "Limits", "Definition", "Aim"], answer: "Tool" },
+      { id: 43, q: "Gold is a solid material used in different ways. (It is...)", options: ["Limits", "Definition", "Tool", "Aim"], answer: "Definition" },
+      { id: 44, q: "The most important part in the writing process is the........", options: ["writer", "reader", "style", "message"], answer: "reader" },
+      { id: 45, q: "The maximum duration of a good presentation is", options: ["10 minutes", "30 minute", "20 minutes", "15 minutes"], answer: "15 minutes" },
+      { id: 46, q: "......a part of the report, which provide clear summary and discussion of results.", options: ["Conclusion", "Abstract", "Introduction", "Importance"], answer: "Abstract" },
+      { id: 47, q: "Limits of a report must be written in...............", options: ["Title page", "Conclusion", "Introduction", "Abstract"], answer: "Introduction" },
+      { id: 48, q: "Statement of the problem of a report must be written in...............", options: ["Abstract", "Conclusion", "Introduction", "Title page"], answer: "Introduction" },
+      { id: 49, q: "Technical reports are based mainly on...", options: ["theories", "data", "organization", "experience"], answer: "experience" },
+      { id: 50, q: "Charts, designs, photos or graphs are placed in a list called.............", options: ["List of tables", "Reference", "List of figures", "Appendix"], answer: "List of figures" },
+      { id: 51, q: "27- defining terms are placed on the primary pages", options: ["true", "false"], answer: "false" },
+      { id: 52, q: "26- telling a story is a strategy of starting a presentation", options: ["false", "true"], answer: "true" },
+      { id: 53, q: "25- you should not move while presenting", options: ["false", "true"], answer: "false" },
+      { id: 54, q: "24- The conclusion(s) of a report must be related to, and resulting from, the material which appears in the report.", options: ["true", "false"], answer: "true" },
+      { id: 55, q: "23- a presentation may be lasted to 30 minutes", options: ["false", "true"], answer: "false" },
+      { id: 56, q: "22- A reference list must appear at the end of a report, listing all sources that have been referred to in the text.", options: ["false", "true"], answer: "true" },
+      { id: 57, q: "21- Headings and subheadings should divide the report into well-defined sections.", options: ["true", "false"], answer: "true" },
+      { id: 58, q: "20- An effective report has clear objectives and presents information in a logical sequence.", options: ["false", "true"], answer: "true" },
+      { id: 59, q: "19- The abstract should appear on a separate page after the title page, and it is usually about 100–200 words in length.", options: ["true", "false"], answer: "true" },
+      { id: 60, q: "18- abstract is written to provide a summary of the report's essential information.", options: ["true", "false"], answer: "true" },
+      { id: 61, q: "17- you should speak in a neuteral tone in a presentation", options: ["true", "false"], answer: "false" },
+      { id: 62, q: "16- there is no limit to the words of the abstract", options: ["false", "true"], answer: "false" },
+      { id: 63, q: "15- acknowledgment is an optional page", options: ["true", "false"], answer: "true" },
+      { id: 64, q: "14- the researcher hive his attitude and recommendation in the conclusion", options: ["false", "true"], answer: "true" },
+      { id: 65, q: "13- the experiment is used in descriptive studies", options: ["false", "true"], answer: "false" },
+      { id: 66, q: "12- The data of the questionnaire is quantitative", options: ["false", "true"], answer: "true" },
+      { id: 67, q: "11- there is no difference between observation and test", options: ["true", "false"], answer: "false" },
+      { id: 68, q: "10- Books and internet sites are tools.", options: ["true", "false"], answer: "false" },
+      { id: 69, q: "2- the title is the most important item in the cover page", options: ["true", "false"], answer: "true" },
+      { id: 70, q: "1- Abstract is an optional item in the primary page", options: ["false", "true"], answer: "false" }
+    ];
+
+    // Fisher-Yates shuffle
+    function shuffleArray(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    let quizQuestions = [];
+    let currentIndex = 0;
+    let userAnswers = {}; // keyed by question id: { selected: string, isCorrect: boolean }
+    let viewMode = "single"; // 'single' | 'all'
+    let searchQuery = "";
+
+    function initQuiz(customPool = null) {
+      const sourcePool = customPool || RAW_QUESTIONS;
+      // Shuffle question order AND shuffle options for each question
+      quizQuestions = shuffleArray(sourcePool).map((item) => ({
+        id: item.id,
+        q: item.q,
+        options: shuffleArray(item.options),
+        answer: item.answer
+      }));
+      currentIndex = 0;
+      userAnswers = {};
+      renderAll();
+    }
+
+    function selectAnswer(questionId, chosenOption) {
+      if (userAnswers[questionId]) return; // already answered
+      const qObj = quizQuestions.find((q) => q.id === questionId);
+      if (!qObj) return;
+      const isCorrect = chosenOption === qObj.answer;
+      userAnswers[questionId] = {
+        selected: chosenOption,
+        isCorrect: isCorrect
+      };
+      renderAll();
+    }
+
+    function revealSingleAnswer() {
+      const currentQ = quizQuestions[currentIndex];
+      if (!currentQ || userAnswers[currentQ.id]) return;
+      userAnswers[currentQ.id] = {
+        selected: currentQ.answer,
+        isCorrect: true
+      };
+      renderAll();
+    }
+
+    function updateStats() {
+      const total = quizQuestions.length;
+      const answeredList = Object.values(userAnswers);
+      const answeredCount = answeredList.length;
+      const correctCount = answeredList.filter((a) => a.isCorrect).length;
+      const wrongCount = answeredCount - correctCount;
+      const percent = answeredCount > 0 ? Math.round((correctCount / answeredCount) * 100) : 0;
+
+      document.getElementById("stat-total").textContent = total;
+      document.getElementById("stat-answered").textContent = answeredCount;
+      document.getElementById("stat-correct").textContent = correctCount;
+      document.getElementById("stat-wrong").textContent = wrongCount;
+      document.getElementById("stat-percent").textContent = `${percent}%`;
+
+      const progressPercent = total > 0 ? (answeredCount / total) * 100 : 0;
+      document.getElementById("progress-bar").style.width = `${progressPercent}%`;
+
+      const btnFilterWrong = document.getElementById("btn-filter-wrong");
+      const wrongBadge = document.getElementById("wrong-count-badge");
+      if (wrongCount > 0) {
+        btnFilterWrong.classList.remove("hidden");
+        wrongBadge.textContent = wrongCount;
+      } else {
+        btnFilterWrong.classList.add("hidden");
+      }
+
+      const btnShowAllPool = document.getElementById("btn-show-all-pool");
+      if (total < RAW_QUESTIONS.length) {
+        btnShowAllPool.classList.remove("hidden");
+      } else {
+        btnShowAllPool.classList.add("hidden");
+      }
+
+      const completionCard = document.getElementById("completion-card");
+      const btnReviewWrongModal = document.getElementById("btn-review-wrong-modal");
+      if (answeredCount === total && total > 0) {
+        completionCard.classList.remove("hidden");
+        document.getElementById("completion-summary-text").textContent =
+          `حصلت على ${correctCount} من ${total} (${percent}%) — إجابات صحيحة: ${correctCount} | إجابات خاطئة: ${wrongCount}`;
+        if (wrongCount > 0) {
+          btnReviewWrongModal.classList.remove("hidden");
+        } else {
+          btnReviewWrongModal.classList.add("hidden");
+        }
+      } else {
+        completionCard.classList.add("hidden");
+      }
+    }
+
+    function renderSingleView() {
+      const total = quizQuestions.length;
+      if (total === 0) return;
+      const currentQ = quizQuestions[currentIndex];
+      const ansState = userAnswers[currentQ.id];
+
+      document.getElementById("single-q-counter").textContent = `سؤال ${currentIndex + 1} من ${total}`;
+      document.getElementById("single-q-orig").textContent = `PDF Page #${currentQ.id}`;
+      document.getElementById("single-q-text").textContent = currentQ.q;
+
+      const optionsContainer = document.getElementById("single-options-list");
+      optionsContainer.innerHTML = "";
+
+      const letters = ["A", "B", "C", "D"];
+      currentQ.options.forEach((opt, idx) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        const letter = letters[idx] || "";
+
+        let baseClasses = "option-btn w-full text-left p-4 rounded-xl border flex items-center justify-between gap-3 font-medium text-sm sm:text-base ";
+        let badgeClasses = "w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 ";
+
+        if (!ansState) {
+          baseClasses += "bg-slate-950/90 hover:bg-slate-800/90 border-slate-800 hover:border-indigo-500/60 text-slate-100";
+          badgeClasses += "bg-slate-800 text-slate-300";
+        } else {
+          btn.disabled = true;
+          const isThisCorrect = opt === currentQ.answer;
+          const isThisSelected = ansState.selected === opt;
+
+          if (isThisCorrect) {
+            baseClasses += "bg-emerald-950/70 border-emerald-500 text-emerald-200 shadow-lg shadow-emerald-950/50";
+            badgeClasses += "bg-emerald-500 text-slate-950";
+          } else if (isThisSelected && !isThisCorrect) {
+            baseClasses += "bg-rose-950/70 border-rose-500 text-rose-200";
+            badgeClasses += "bg-rose-500 text-white";
+          } else {
+            baseClasses += "bg-slate-950/40 border-slate-800/60 text-slate-500 opacity-60";
+            badgeClasses += "bg-slate-800/60 text-slate-500";
+          }
+        }
+
+        btn.className = baseClasses;
+
+        const leftDiv = document.createElement("div");
+        leftDiv.className = "flex items-center gap-3";
+
+        const badge = document.createElement("span");
+        badge.className = badgeClasses;
+        badge.textContent = letter;
+
+        const textSpan = document.createElement("span");
+        textSpan.textContent = opt;
+
+        leftDiv.appendChild(badge);
+        leftDiv.appendChild(textSpan);
+        btn.appendChild(leftDiv);
+
+        if (ansState) {
+          const iconSpan = document.createElement("span");
+          iconSpan.className = "text-xs font-bold px-2 py-1 rounded";
+          if (opt === currentQ.answer) {
+            iconSpan.className += " bg-emerald-500/20 text-emerald-300";
+            iconSpan.textContent = "✓ إجابة صحيحة";
+            btn.appendChild(iconSpan);
+          } else if (ansState.selected === opt) {
+            iconSpan.className += " bg-rose-500/20 text-rose-300";
+            iconSpan.textContent = "✗ اختيارك خاطئ";
+            btn.appendChild(iconSpan);
+          }
+        }
+
+        btn.addEventListener("click", () => selectAnswer(currentQ.id, opt));
+        optionsContainer.appendChild(btn);
+      });
+
+      const feedbackBox = document.getElementById("single-feedback");
+      const feedbackText = document.getElementById("single-feedback-text");
+      const feedbackCorrect = document.getElementById("single-feedback-correct");
+
+      if (!ansState) {
+        feedbackBox.classList.add("hidden");
+      } else {
+        feedbackBox.classList.remove("hidden");
+        if (ansState.isCorrect) {
+          feedbackBox.className = "mt-5 p-4 rounded-xl border bg-emerald-950/50 border-emerald-500/40 text-emerald-200 text-sm font-medium flex flex-wrap items-center justify-between gap-3";
+          feedbackText.textContent = "إجابة صحيحة! أحسنت.";
+          feedbackCorrect.textContent = `Correct: ${currentQ.answer}`;
+        } else {
+          feedbackBox.className = "mt-5 p-4 rounded-xl border bg-rose-950/50 border-rose-500/40 text-rose-200 text-sm font-medium flex flex-wrap items-center justify-between gap-3";
+          feedbackText.textContent = "إجابة خاطئة! الإجابة الصحيحة موضحة باللون الأخضر:";
+          feedbackCorrect.textContent = `Correct: ${currentQ.answer}`;
+        }
+      }
+
+      document.getElementById("btn-prev").disabled = currentIndex === 0;
+      document.getElementById("btn-next").disabled = currentIndex === total - 1;
+      document.getElementById("btn-reveal-single").disabled = Boolean(ansState);
+      if (ansState) {
+        document.getElementById("btn-reveal-single").classList.add("opacity-40", "pointer-events-none");
+      } else {
+        document.getElementById("btn-reveal-single").classList.remove("opacity-40", "pointer-events-none");
+      }
+
+      // Render Question Grid
+      const grid = document.getElementById("question-grid");
+      grid.innerHTML = "";
+      quizQuestions.forEach((qItem, idx) => {
+        const pill = document.createElement("button");
+        pill.type = "button";
+        const st = userAnswers[qItem.id];
+        let cls = "h-8 rounded-lg text-xs font-bold transition flex items-center justify-center ";
+        if (idx === currentIndex) {
+          cls += "ring-2 ring-indigo-400 ";
+        }
+        if (!st) {
+          cls += "bg-slate-800 hover:bg-slate-700 text-slate-300";
+        } else if (st.isCorrect) {
+          cls += "bg-emerald-600 text-white";
+        } else {
+          cls += "bg-rose-600 text-white";
+        }
+        pill.className = cls;
+        pill.textContent = idx + 1;
+        pill.addEventListener("click", () => {
+          currentIndex = idx;
+          renderSingleView();
+        });
+        grid.appendChild(pill);
+      });
+    }
+
+    function renderAllQuestionsView() {
+      const container = document.getElementById("all-questions-container");
+      container.innerHTML = "";
+
+      const query = searchQuery.trim().toLowerCase();
+      const filtered = quizQuestions.filter((item) => {
+        if (!query) return true;
+        return (
+          item.q.toLowerCase().includes(query) ||
+          item.options.some((o) => o.toLowerCase().includes(query))
+        );
+      });
+
+      document.getElementById("all-view-count").textContent = `عرض ${filtered.length} من ${quizQuestions.length} سؤال`;
+
+      const letters = ["A", "B", "C", "D"];
+      filtered.forEach((qItem) => {
+        const orderNum = quizQuestions.findIndex((x) => x.id === qItem.id) + 1;
+        const ansState = userAnswers[qItem.id];
+
+        const card = document.createElement("div");
+        card.className = "bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg";
+
+        const header = document.createElement("div");
+        header.className = "flex items-center justify-between gap-2 mb-3";
+        header.innerHTML = `
+          <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-500/15 text-indigo-300 border border-indigo-500/30">
+            سؤال #${orderNum}
+          </span>
+          <span class="text-xs text-slate-500 ltr-text">PDF Page #${qItem.id}</span>
+        `;
+
+        const title = document.createElement("h3");
+        title.className = "ltr-text text-base sm:text-lg font-semibold text-white mb-4 bg-slate-950/60 p-3.5 rounded-xl border border-slate-800/80";
+        title.textContent = qItem.q;
+
+        const optsGrid = document.createElement("div");
+        optsGrid.className = "grid grid-cols-1 sm:grid-cols-2 gap-2.5 ltr-text";
+
+        qItem.options.forEach((opt, idx) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          const letter = letters[idx] || "";
+          let cls = "text-left p-3 rounded-xl border text-sm font-medium flex items-center justify-between gap-2 transition ";
+
+          if (!ansState) {
+            cls += "bg-slate-950 hover:bg-slate-800 border-slate-800 text-slate-200";
+          } else {
+            btn.disabled = true;
+            if (opt === qItem.answer) {
+              cls += "bg-emerald-950/80 border-emerald-500 text-emerald-200 font-semibold";
+            } else if (ansState.selected === opt) {
+              cls += "bg-rose-950/80 border-rose-500 text-rose-200";
+            } else {
+              cls += "bg-slate-950/40 border-slate-800/50 text-slate-500 opacity-60";
+            }
+          }
+
+          btn.className = cls;
+          btn.innerHTML = `
+            <span class="flex items-center gap-2">
+              <span class="w-6 h-6 rounded bg-slate-800 text-slate-300 text-xs font-bold flex items-center justify-center shrink-0">${letter}</span>
+              <span>${opt}</span>
+            </span>
+            <span>${ansState ? (opt === qItem.answer ? "✓" : ansState.selected === opt ? "✗" : "") : ""}</span>
+          `;
+          btn.addEventListener("click", () => selectAnswer(qItem.id, opt));
+          optsGrid.appendChild(btn);
+        });
+
+        card.appendChild(header);
+        card.appendChild(title);
+        card.appendChild(optsGrid);
+        container.appendChild(card);
+      });
+    }
+
+    function renderAll() {
+      updateStats();
+      if (viewMode === "single") {
+        document.getElementById("view-single").classList.remove("hidden");
+        document.getElementById("view-all").classList.add("hidden");
+        renderSingleView();
+      } else {
+        document.getElementById("view-single").classList.add("hidden");
+        document.getElementById("view-all").classList.remove("hidden");
+        renderAllQuestionsView();
+      }
+    }
+
+    function setViewMode(mode) {
+      viewMode = mode;
+      const btnSingle = document.getElementById("btn-mode-single");
+      const btnAll = document.getElementById("btn-mode-all");
+      if (mode === "single") {
+        btnSingle.className = "px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-indigo-600 text-white transition";
+        btnAll.className = "px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition";
+      } else {
+        btnAll.className = "px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-indigo-600 text-white transition";
+        btnSingle.className = "px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition";
+      }
+      renderAll();
+    }
+
+    function startWrongOnlyQuiz() {
+      const wrongIds = Object.entries(userAnswers)
+        .filter(([, val]) => !val.isCorrect)
+        .map(([id]) => Number(id));
+      if (wrongIds.length === 0) return;
+      const wrongPool = RAW_QUESTIONS.filter((q) => wrongIds.includes(q.id));
+      initQuiz(wrongPool);
+    }
+
+    // Event Listeners
+    document.getElementById("btn-mode-single").addEventListener("click", () => setViewMode("single"));
+    document.getElementById("btn-mode-all").addEventListener("click", () => setViewMode("all"));
+    document.getElementById("btn-shuffle-restart").addEventListener("click", () => initQuiz());
+    document.getElementById("btn-restart-modal").addEventListener("click", () => initQuiz());
+    document.getElementById("btn-filter-wrong").addEventListener("click", startWrongOnlyQuiz);
+    document.getElementById("btn-review-wrong-modal").addEventListener("click", startWrongOnlyQuiz);
+    document.getElementById("btn-show-all-pool").addEventListener("click", () => initQuiz());
+
+    document.getElementById("btn-prev").addEventListener("click", () => {
+      if (currentIndex > 0) {
+        currentIndex--;
+        renderSingleView();
+      }
+    });
+
+    document.getElementById("btn-next").addEventListener("click", () => {
+      if (currentIndex < quizQuestions.length - 1) {
+        currentIndex++;
+        renderSingleView();
+      }
+    });
+
+    document.getElementById("btn-reveal-single").addEventListener("click", revealSingleAnswer);
+
+    document.getElementById("search-input").addEventListener("input", (e) => {
+      searchQuery = e.target.value;
+      renderAllQuestionsView();
+    });
+
+    // Keyboard navigation for convenience
+    window.addEventListener("keydown", (e) => {
+      if (viewMode !== "single") return;
+      if (e.target && e.target.tagName === "INPUT") return;
+      if (e.key === "ArrowLeft" && currentIndex < quizQuestions.length - 1) {
+        currentIndex++;
+        renderSingleView();
+      } else if (e.key === "ArrowRight" && currentIndex > 0) {
+        currentIndex--;
+        renderSingleView();
+      }
+    });
+
+    // Initialize on load
+    initQuiz();
+  </script>
+</body>
+</html>
