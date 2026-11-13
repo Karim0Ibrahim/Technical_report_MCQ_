@@ -33,8 +33,14 @@
           70
         </div>
         <div>
-          <h1 class="font-bold text-base sm:text-lg text-white">اختبار التقارير الفنية والعروض التقديمية</h1>
-          <p class="text-xs text-slate-400">ترتيب الأسئلة والاختيارات عشوائي بالكامل في كل مرة</p>
+          <div class="flex items-center gap-2">
+            <h1 class="font-bold text-base sm:text-lg text-white">اختبار التقارير الفنية والعروض التقديمية</h1>
+            <span id="save-status-badge" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+              <span>حفظ تلقائي</span>
+              <span>✓</span>
+            </span>
+          </div>
+          <p class="text-xs text-slate-400">يتم حفظ إجاباتك ومكان توقفك تلقائياً حتى لو خرجت من الموقع</p>
         </div>
       </div>
 
@@ -45,7 +51,7 @@
         <button id="btn-mode-all" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition">
           كل الأسئلة (70)
         </button>
-        <button id="btn-shuffle-restart" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-emerald-600 hover:bg-emerald-500 text-white flex items-center gap-1.5 shadow-md shadow-emerald-600/20 transition">
+        <button id="btn-shuffle-restart" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-emerald-600 hover:bg-emerald-500 text-white flex items-center gap-1.5 shadow-md shadow-emerald-600/20 transition" title="إعادة ضبط الاختبار وخلط الأسئلة من جديد">
           <span>خلط وإعادة</span>
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -253,6 +259,8 @@
       { id: 70, q: "1- Abstract is an optional item in the primary page", options: ["false", "true"], answer: "false" }
     ];
 
+    const STORAGE_KEY = "tech_reports_quiz_saved_state_v1";
+
     // Fisher-Yates shuffle
     function shuffleArray(arr) {
       const copy = [...arr];
@@ -269,6 +277,66 @@
     let viewMode = "single"; // 'single' | 'all'
     let searchQuery = "";
 
+    function saveState() {
+      try {
+        const payload = {
+          quizQuestions: quizQuestions,
+          currentIndex: currentIndex,
+          userAnswers: userAnswers,
+          viewMode: viewMode
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+        const badge = document.getElementById("save-status-badge");
+        if (badge) {
+          badge.classList.remove("opacity-60");
+        }
+      } catch (err) {
+        // Fallback if localStorage is blocked or full
+      }
+    }
+
+    function loadSavedState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return false;
+        const parsed = JSON.parse(raw);
+        if (
+          !parsed ||
+          !Array.isArray(parsed.quizQuestions) ||
+          parsed.quizQuestions.length === 0
+        ) {
+          return false;
+        }
+        quizQuestions = parsed.quizQuestions;
+        currentIndex =
+          typeof parsed.currentIndex === "number" &&
+          parsed.currentIndex >= 0 &&
+          parsed.currentIndex < quizQuestions.length
+            ? parsed.currentIndex
+            : 0;
+        userAnswers =
+          parsed.userAnswers && typeof parsed.userAnswers === "object"
+            ? parsed.userAnswers
+            : {};
+        viewMode = parsed.viewMode === "all" ? "all" : "single";
+        return true;
+      } catch (err) {
+        return false;
+      }
+    }
+
+    function syncViewModeButtons() {
+      const btnSingle = document.getElementById("btn-mode-single");
+      const btnAll = document.getElementById("btn-mode-all");
+      if (viewMode === "single") {
+        btnSingle.className = "px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-indigo-600 text-white transition";
+        btnAll.className = "px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition";
+      } else {
+        btnAll.className = "px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-indigo-600 text-white transition";
+        btnSingle.className = "px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition";
+      }
+    }
+
     function initQuiz(customPool = null) {
       const sourcePool = customPool || RAW_QUESTIONS;
       // Shuffle question order AND shuffle options for each question
@@ -280,6 +348,7 @@
       }));
       currentIndex = 0;
       userAnswers = {};
+      saveState();
       renderAll();
     }
 
@@ -292,6 +361,7 @@
         selected: chosenOption,
         isCorrect: isCorrect
       };
+      saveState();
       renderAll();
     }
 
@@ -302,6 +372,7 @@
         selected: currentQ.answer,
         isCorrect: true
       };
+      saveState();
       renderAll();
     }
 
@@ -480,6 +551,7 @@
         pill.textContent = idx + 1;
         pill.addEventListener("click", () => {
           currentIndex = idx;
+          saveState();
           renderSingleView();
         });
         grid.appendChild(pill);
@@ -564,6 +636,7 @@
     }
 
     function renderAll() {
+      syncViewModeButtons();
       updateStats();
       if (viewMode === "single") {
         document.getElementById("view-single").classList.remove("hidden");
@@ -578,15 +651,7 @@
 
     function setViewMode(mode) {
       viewMode = mode;
-      const btnSingle = document.getElementById("btn-mode-single");
-      const btnAll = document.getElementById("btn-mode-all");
-      if (mode === "single") {
-        btnSingle.className = "px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-indigo-600 text-white transition";
-        btnAll.className = "px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition";
-      } else {
-        btnAll.className = "px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-indigo-600 text-white transition";
-        btnSingle.className = "px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition";
-      }
+      saveState();
       renderAll();
     }
 
@@ -611,6 +676,7 @@
     document.getElementById("btn-prev").addEventListener("click", () => {
       if (currentIndex > 0) {
         currentIndex--;
+        saveState();
         renderSingleView();
       }
     });
@@ -618,6 +684,7 @@
     document.getElementById("btn-next").addEventListener("click", () => {
       if (currentIndex < quizQuestions.length - 1) {
         currentIndex++;
+        saveState();
         renderSingleView();
       }
     });
@@ -635,15 +702,21 @@
       if (e.target && e.target.tagName === "INPUT") return;
       if (e.key === "ArrowLeft" && currentIndex < quizQuestions.length - 1) {
         currentIndex++;
+        saveState();
         renderSingleView();
       } else if (e.key === "ArrowRight" && currentIndex > 0) {
         currentIndex--;
+        saveState();
         renderSingleView();
       }
     });
 
-    // Initialize on load
-    initQuiz();
+    // Initialize on load: restore saved state if available, otherwise start fresh
+    if (loadSavedState()) {
+      renderAll();
+    } else {
+      initQuiz();
+    }
   </script>
 </body>
 </html>
